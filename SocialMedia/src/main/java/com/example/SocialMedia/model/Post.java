@@ -2,6 +2,7 @@ package com.example.SocialMedia.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,9 +16,8 @@ public class Post {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @OneToOne
-    @JoinColumn(name = "image_id", unique = true)
-    private Image image;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images = new ArrayList<>();
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -28,6 +28,9 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Comment> comments;
+
+    @Column(name = "visibility", nullable = false)
+    private String visibility = "public"; 
 
     @PrePersist
     public void prePersist() {
@@ -45,12 +48,16 @@ public class Post {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Image getImage() { return image; }
-    public void setImage(Image image) { this.image = image; }
+    public List<Image> getImages() { return images; }
+    public void setImages(List<Image> images) { this.images = images; }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
     public List<Comment> getComments() { return comments; }
     public void setComments(List<Comment> comments) { this.comments = comments; }
+
+    public String getVisibility() { return visibility; }
+    public void setVisibility(String visibility) { this.visibility = visibility; }
+    
 }

@@ -30,11 +30,7 @@ public class UserRegisterRequest {
 
     @NotBlank(message = "Password is required")
 
-    private String password;
-
-    @NotBlank(message = "Display name is required")
-    @Size(min = 2, max = 60, message = "Display name must be 2-60 characters")
-    private String displayName;
+    private String password;;
 
 
     public String getName() {
@@ -67,13 +63,5 @@ public class UserRegisterRequest {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName != null ? displayName.trim() : null;
     }
 }

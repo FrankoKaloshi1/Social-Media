@@ -23,7 +23,12 @@ public class Image {
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
 
-@OneToOne(mappedBy = "image")
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = true)
     private Post post;
 
     @PrePersist
@@ -47,6 +52,9 @@ public class Image {
 
     public LocalDateTime getUploadedAt() { return uploadedAt; }
     public void setUploadedAt(LocalDateTime uploadedAt) { this.uploadedAt = uploadedAt; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
     public Post getPost() { return post; }
     public void setPost(Post post) { this.post = post; }

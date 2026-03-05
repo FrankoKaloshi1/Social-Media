@@ -1,5 +1,6 @@
 package com.example.SocialMedia.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -17,6 +18,7 @@ public class Comment {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
