@@ -59,6 +59,13 @@ public class User {
     @Column(name = "created_at")
     private java.time.LocalDateTime createdAt;
 
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    private List<Chat> sentMessages;
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    private List<Chat> receivedMessages;
+    @OneToMany(mappedBy = "userDeleted", cascade = CascadeType.ALL)
+    private List<Chat> deletedMessages;
+
      
     @PrePersist
     public void prePersist() {
@@ -102,6 +109,12 @@ public class User {
 
     public List<Block> getBlockedBy() { return blockedBy; }
     public void setBlockedBy(List<Block> blockedBy) { this.blockedBy = blockedBy; }
+
+    public List<Chat> getSentMessages() { return sentMessages; }
+    public void setSentMessages(List<Chat> sentMessages) { this.sentMessages = sentMessages; }
+
+    public List<Chat> getReceivedMessages() { return receivedMessages; }
+    public void setReceivedMessages(List<Chat> receivedMessages) { this.receivedMessages = receivedMessages; }
 
     public String getProfileVisiblity() { return profileVisiblity; }
     public void setProfileVisiblity(String profileVisiblity) { this.profileVisiblity = profileVisiblity; }
