@@ -1,10 +1,6 @@
 package com.example.SocialMedia.model;
 
 import java.time.LocalDateTime;
-
-import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties.Apiversion.Use;
-
-import jakarta.annotation.Generated;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,7 +27,7 @@ public class Chat {
     @JoinColumn(name = "receiver_id", nullable = false)
     private User receiver;
 
-    @Column(name = "message", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
     @Column(name="is_read", nullable = false)
@@ -43,6 +39,10 @@ public class Chat {
     @ManyToOne
     @JoinColumn(name = "user_id_deleted")
     private User userDeleted;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id_shared")
+    private Post postShared;
 
     @PrePersist
     public void prePersist() {
@@ -71,5 +71,8 @@ public class Chat {
 
     public User getUserDeleted() { return userDeleted; }
     public void setUserDeleted(User userDeleted) { this.userDeleted = userDeleted; }
+
+    public Post getPostShared() { return postShared; }
+    public void setPostShared(Post postShared) { this.postShared = postShared; }
 
 }

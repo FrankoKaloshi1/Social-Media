@@ -16,11 +16,14 @@ import org.springframework.stereotype.Service;
 import com.example.SocialMedia.Dto.ChatMessageResponseDto;
 import com.example.SocialMedia.Dto.DeleteMessagesRequest;
 import com.example.SocialMedia.Dto.SendMessageRequest;
+import com.example.SocialMedia.Dto.SharedPostResponseDto;
 import com.example.SocialMedia.Dto.UpdateMessageRequest;
 import com.example.SocialMedia.model.Chat;
+import com.example.SocialMedia.model.Post;
 import com.example.SocialMedia.model.User;
 import com.example.SocialMedia.repositories.ChatRepository;
 import com.example.SocialMedia.repositories.FollowerRepository;
+import com.example.SocialMedia.repositories.PostRepository;
 import com.example.SocialMedia.repositories.UserRepository;
 
 @Service
@@ -30,6 +33,7 @@ public class ChatService {
     private final UserRepository userRepository;
     private final BlockService blockService;
     private final FollowerRepository followerRepository;
+    private final PostRepository postRepository;
     private final SecretKeySpec aesKey;
 
 
@@ -37,11 +41,13 @@ public class ChatService {
                        UserRepository userRepository,
                        BlockService blockService,
                        FollowerRepository followerRepository,
+                       PostRepository postRepository,
                        @Value("${chat.encryption.secret}") String secret) {
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
         this.blockService = blockService;
         this.followerRepository = followerRepository;
+        this.postRepository = postRepository;
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         this.aesKey = new SecretKeySpec(keyBytes, "AES");
     }
@@ -61,12 +67,24 @@ public class ChatService {
         }
 
 
-        String encryptedMessage = encrypt(request.getMessage());
-
         Chat chat = new Chat();
         chat.setSender(sender);
         chat.setReceiver(receiver);
-        chat.setMessage(encryptedMessage);
+
+        if ((request.getMessage() == null || request.getMessage().isBlank()) && request.getPostId() == null) {
+            throw new IllegalArgumentException("Content must not be empty. Please provide a message or a post to share.");
+        }
+
+        if (request.getMessage() != null && !request.getMessage().isBlank()) {
+            chat.setMessage(encrypt(request.getMessage()));
+        }
+
+        if (request.getPostId() != null) {
+            Post post = postRepository.findById(request.getPostId())
+                    .orElseThrow(() -> new RuntimeException("Post not found"));
+            chat.setPostShared(post);
+        }
+
         chatRepository.save(chat);
     }
 
@@ -75,6 +93,7 @@ public class ChatService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         User otherUser = userRepository.findById(otherUserId)
                 .orElseThrow(() -> new RuntimeException("Other user not found"));
+
 
         List<Chat> sentMessages = chatRepository.findBySenderIdAndReceiverId(user.getId(), otherUser.getId());
         List<Chat> receivedMessages = chatRepository.findByReceiverIdAndSenderId(user.getId(), otherUser.getId());
@@ -85,10 +104,12 @@ public class ChatService {
             if(chat.getUserDeleted() != null && chat.getUserDeleted().getId().equals(userId)) {
                 return;
             }
+            Post post = chat.getPostShared();
             messages.add(new ChatMessageResponseDto(
                 chat.getId(),
                 "Sender",
-                decrypt(chat.getMessage()),
+                decryptIfPresent(chat.getMessage()),
+                post != null ? new SharedPostResponseDto(post) : null,
                 chat.getCreatedAt()));
             });
 
@@ -97,12 +118,16 @@ public class ChatService {
             if(chat.getUserDeleted() != null && chat.getUserDeleted().getId().equals(userId)) {
                 return;
             }
+            Post post = chat.getPostShared();
+
+
             chat.setIsRead(true);
             chatRepository.save(chat);
             messages.add(new ChatMessageResponseDto(
                     chat.getId(),
                     "Receiver",
-                    decrypt(chat.getMessage()),
+                    decryptIfPresent(chat.getMessage()),
+                    post != null ? new SharedPostResponseDto(post) : null,
                     chat.getCreatedAt()));
         });
         messages.sort(Comparator.comparing(ChatMessageResponseDto::getCreatedAt));
@@ -192,6 +217,13 @@ public class ChatService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to decrypt message", e);
         }
+    }
+
+    private String decryptIfPresent(String encryptedMessage) {
+        if (encryptedMessage == null || encryptedMessage.isBlank()) {
+            return null;
+        }
+        return decrypt(encryptedMessage);
     }
 
     private String encrypt(String message) {

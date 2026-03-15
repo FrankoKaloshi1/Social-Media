@@ -8,30 +8,23 @@ import com.example.SocialMedia.model.Post;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class PostResponseDto {
+public class SharedPostResponseDto {
 
     private Long id;
     private String content;
-    private Integer likesCount;
-    private Integer sharesCount;
     private LocalDateTime createdAt;
     private UserSummaryDto user;
     private List<String> imageUrls;
-    private List<CommentResponseDto> comments;
 
-    public PostResponseDto(Post post) {
+    public SharedPostResponseDto(Post post) {
         this.id = post.getId();
         this.content = post.getContent();
         this.createdAt = post.getCreatedAt();
-        this.likesCount = post.getLikesCount();
-        this.sharesCount = post.getSharesCount();
         if (post.getUser() != null) {
             this.user = new UserSummaryDto(post.getUser().getName(), post.getUser().getSurname(), post.getUser().getEmail());
         }
         this.imageUrls = post.getImages() == null ? List.of() :
             post.getImages().stream().map(img -> img.getFileUrl()).collect(Collectors.toList());
-        this.comments = post.getComments() == null ? List.of() :
-            post.getComments().stream().map(CommentResponseDto::new).collect(Collectors.toList());
     }
 
     public Long getId() { return id; }
@@ -39,7 +32,4 @@ public class PostResponseDto {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public UserSummaryDto getUser() { return user; }
     public List<String> getImageUrls() { return imageUrls; }
-    public List<CommentResponseDto> getComments() { return comments; }
-    public Integer getLikesCount() { return likesCount; }
-    public Integer getSharesCount() { return sharesCount; }
 }

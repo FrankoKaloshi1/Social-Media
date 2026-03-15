@@ -13,21 +13,32 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Image> images = new ArrayList<>();
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Comment> comments;
+
+    @Column(name = "likes_count" , nullable = false)
+    private int likesCount = 0;
+
+    @Column(name = "shares_count" , nullable = false)
+    private int sharesCount = 0;
+
+    @OneToMany(mappedBy = "postShared", cascade = CascadeType.ALL)
+    private List<Chat> postShared = new ArrayList<>();
 
     @Column(name = "visibility", nullable = false)
     private String visibility = "public"; 
@@ -59,5 +70,14 @@ public class Post {
 
     public String getVisibility() { return visibility; }
     public void setVisibility(String visibility) { this.visibility = visibility; }
+
+    public int getLikesCount() { return likesCount; }
+    public void setLikesCount(int likesCount) { this.likesCount = likesCount; }
+
+    public int getSharesCount() { return sharesCount; }
+    public void setSharesCount(int sharesCount) { this.sharesCount = sharesCount; }
+
+    public List<Chat> getPostShared() { return postShared; }
+    public void setPostShared(List<Chat> postShared) { this.postShared = postShared; }
     
 }
